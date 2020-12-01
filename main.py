@@ -10,7 +10,7 @@ class Agent:
         self.logic_map = {(x, y): [False, False, False] for x in range(4) for y in range(4)}
         self.route_queue = []
         self.was_here = {(3, 0)}
-        self.know_vampus_position, self.know_gold_position = False, False
+        self.know_vampus_position, self.know_gold_position, self.killed_vampus = False, False, False
 
     def get_locations(self):
         """Get all neighbour cells."""
@@ -89,13 +89,20 @@ class Agent:
         self.route_queue.sort(key=lambda x: (-self.logic_map[(x[0], x[1])][1],
                                              self.logic_map[(x[0], x[1])][0],
                                              self.logic_map[(x[0], x[1])][2]), reverse=True)
-
-        # Get best step and make it
-        step = self.route_queue.pop()
-        self.world[self.x][self.y][3] = False
-        self.x, self.y = step
-        self.world[self.x][self.y][3] = True
-        self.was_here.add((self.x, self.y))
+        if self.know_vampus_position and not self.killed_vampus:
+            self.killed_vampus = True
+            print(f'Agent killed vampus!')
+            self.clear_map((3, 0), 2)
+            for i in range(4):
+                for j in range(4):
+                    self.world[i][j][2] = False
+        else:
+            # Get best step and make it
+            step = self.route_queue.pop()
+            self.world[self.x][self.y][3] = False
+            self.x, self.y = step
+            self.world[self.x][self.y][3] = True
+            self.was_here.add((self.x, self.y))
 
 
 # Build gui app
