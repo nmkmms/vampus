@@ -1,5 +1,3 @@
-# work with world instance (probably it is copied to Agent class)
-
 import tkinter as tk
 import random
 
@@ -12,6 +10,7 @@ class Agent:
         self.logic_map = {(x, y): [False, False, False] for x in range(4) for y in range(4)}
         self.route_queue = []
         self.was_here = {(3, 0)}
+        self.know_vampus_position = False
 
     def get_locations(self):
         locations = []
@@ -30,23 +29,41 @@ class Agent:
         hole, gold, vampus = False, False, False
         for location in locations:
             if location not in self.was_here:
-                curr = self.logic_map[location]
+                # curr = self.logic_map[location]
                 feel = self.world[location[0]][location[1]]
-                new = [curr[num] or feel[num] for num in range(3)]
-                if new[0]:
+                # new = [curr[num] or feel[num] for num in range(3)]
+                # if new[0]:
+                #     print(f'There is probably a hole in {location}')
+                # if new[2]:
+                #     print(f'There is probably a vampus in {location}')
+                # self.logic_map[location] = new
+                if feel[0]: hole = True
+                if feel[1]: gold = True
+                if feel[2] and not self.know_vampus_position: vampus = True
+
+        for location in locations:
+            if location not in self.was_here:
+                if hole:
+                    self.logic_map[location][0] = True
                     print(f'There is probably a hole in {location}')
-                if new[2]:
-                    print(f'There is probably a vampus in {location}')
-                self.logic_map[location] = new
-                # hole = True if feel[0] else False
-                # gold = True if feel[1] else False
-                # vampus = True if feel[2] else False
+                if gold:
+                    self.logic_map[location][1] = True
+                    print(f'There is probably a gold in {location}')
+                if vampus:
+                    if self.logic_map[location][2]:
+                        self.know_vampus_position = True
+                        print(f'Vampus is definately at {location}')
+                    else:
+                        self.logic_map[location][2] = True
+                        print(f'There is probably a vampus in {location}')
 
-        # for location in locations:
-        #     self.logic_map[location][0] = hole
-        #     self.logic_map[location][0] = gold
-        #     self.logic_map[location][0] = vampus
-
+    def clear_map(self, location, item):
+        for i in range(4):
+            for j in range(4):
+                if (i, j) == location:
+                    continue
+                else:
+                    self.logic_map[(i, j)][item] = 0
 
     def move(self):
         locations = self.get_locations()
